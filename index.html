@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mount Vernon Elementary PBIS Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Montserrat', sans-serif; }
+        .cart-bounce { animation: bounce 0.3s ease-in-out; }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .rca-gradient { background: linear-gradient(135deg, #051643 0%, #650ba9 25%, #b164eb 50%, #28b7f2 75%, #ace2fd 100%); }
+        .rca-text-gradient { background: linear-gradient(135deg, #051643, #650ba9, #b164eb, #28b7f2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: none; }
+        .excellence-badge { 
+            background: linear-gradient(45deg, #ace911, #ceff78);
+            box-shadow: 0 4px 15px rgba(172, 233, 17, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen" style="background: linear-gradient(135deg, #ace2fd 0%, #28b7f2 20%, #b164eb 40%, #852fc3 60%, #650ba9 80%, #051643 100%);">
+    <!-- Header -->
+    <header class="rca-gradient shadow-2xl">
+        <div class="max-w-6xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="excellence-badge text-white p-6 rounded-full shadow-lg relative overflow-hidden" id="headerLogo">
+                        <img id="headerLogoImage" src="" alt="School Logo" class="absolute inset-0 w-full h-full object-cover rounded-full" style="display: none;" onerror="this.style.display='none'; document.getElementById('headerLogoStar').style.display='block';">
+                        <svg id="headerLogoStar" class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white tracking-wide">MOUNT VERNON ELEMENTARY</h1>
+                        <p class="text-yellow-300 font-bold text-lg tracking-wider">MAGIC REWARD STORE</p>
+                        <p class="text-blue-200 text-sm font-medium italic">"Showing our unicorn MAGIC every day!"</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-blue-200">Welcome back,</p>
+                        <p class="font-bold text-white text-lg" id="studentName">Student</p>
+                    </div>
+                    <div class="excellence-badge px-6 py-3 rounded-xl shadow-lg">
+                        <p class="text-sm text-white font-bold">MAGIC POINTS</p>
+                        <p class="text-2xl font-black text-white" id="pointBalance">150</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-4 border-red-200">
+            <div class="text-center mb-6">
+                <div class="bg-red-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2L3 7v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7l-7-5zM8 18v-6h4v6H8zm2-8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-red-600">ADMIN ACCESS</h2>
+                <p class="text-gray-600 mt-2 font-medium">Administrator login required</p>
+            </div>
+            <form id="adminLoginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Admin Password</label>
+                    <input type="password" id="adminPassword" class="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="Enter admin password" required>
+                </div>
+                <button type="submit" class="w-full bg-red-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                    Access Admin Panel
+                </button>
+                <button type="button" id="cancelAdminLogin" class="w-full bg-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-400 transition duration-200 uppercase tracking-wide">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Teacher Login Modal -->
+    <div id="teacherLoginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-4 border-blue-200">
+            <div class="text-center mb-6">
+                <div class="bg-blue-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-blue-600">TEACHER ACCESS</h2>
+                <p class="text-gray-600 mt-2 font-medium">Teacher login required</p>
+            </div>
+            <form id="teacherLoginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Teacher Name</label>
+                    <select id="teacherSelect" class="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium" required>
+                        <option value="">Select your name</option>
+                        <option value="a-harris">A. Harris</option>
+                        <option value="cossairt">Cossairt</option>
+                        <option value="d-harris">D. Harris</option>
+                        <option value="donoso">Donoso</option>
+                        <option value="gorton">Gorton</option>
+                        <option value="greene">Greene</option>
+                        <option value="hahn">Hahn</option>
+                        <option value="hyde">Hyde</option>
+                        <option value="joyner">Joyner</option>
+                        <option value="lieber">Lieber</option>
+                        <option value="mccrary">McCrary</option>
+                        <option value="mcmahan">McMahan</option>
+                        <option value="ramicone">Ramicone</option>
+                        <option value="reiche">Reiche</option>
+                        <option value="singleton">Singleton</option>
+                        <option value="westerfield">Westerfield</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Teacher Password</label>
+                    <input type="password" id="teacherPassword" class="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                    Access Teacher Panel
+                </button>
+                <button type="button" id="cancelTeacherLogin" class="w-full bg-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-400 transition duration-200 uppercase tracking-wide">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 overflow-y-auto" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-6xl w-full mx-4 my-8 shadow-2xl border-4 border-red-200 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-red-600">ADMIN PANEL</h2>
+                    <p class="text-gray-600 font-medium">Manage Store Categories & Items</p>
+                </div>
+                <button id="closeAdminPanel" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition duration-200">
+                    Close Panel
+                </button>
+            </div>
+            
+            <!-- Student Management Section -->
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 mb-8 border-2 border-green-200">
+                <h3 class="text-2xl font-bold text-green-700 mb-4 flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Student Management
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Excel Upload Section -->
+                    <div class="bg-white rounded-xl p-6 border-2 border-green-200 shadow-lg">
+                        <h4 class="text-lg font-bold text-green-700 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                            </svg>
+                            Upload Student List (Excel)
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Select Excel File</label>
+                                <input type="file" id="studentExcelUpload" accept=".xlsx,.xls,.csv" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 font-medium">
+                                <p class="text-xs text-gray-600 mt-2">Upload Excel file with columns: Teacher, Student Name, R2.D2 Username, House, Points</p>
+                            </div>
+                            
+                            <button id="uploadStudentsBtn" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                                Upload Students
+                            </button>
+                            
+                            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                                <h5 class="font-bold text-blue-700 mb-2">Excel Format Example:</h5>
+                                <div class="text-xs font-mono bg-white p-3 rounded border">
+                                    <div class="grid grid-cols-5 gap-2 font-bold border-b pb-1 mb-1">
+                                        <span>Teacher</span>
+                                        <span>Student Name</span>
+                                        <span>R2.D2 Username</span>
+                                        <span>House</span>
+                                        <span>Points</span>
+                                    </div>
+                                    <div class="grid grid-cols-5 gap-2 text-gray-600">
+                                        <span>A. Harris</span>
+                                        <span>John Smith</span>
+                                        <span>jsmith2024</span>
+                                        <span>Altruismo</span>
+                                        <span>150</span>
+                                    </div>
+                                    <div class="grid grid-cols-5 gap-2 text-gray-600">
+                                        <span>Greene</span>
+                                        <span>Jane Doe</span>
+                                        <span>jdoe2024</span>
+                                        <span>Amistad</span>
+                                        <span>200</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Student Statistics -->
+                    <div class="bg-white rounded-xl p-6 border-2 border-green-200 shadow-lg">
+                        <h4 class="text-lg font-bold text-green-700 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Student Database Stats
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                                    <p class="text-sm font-bold text-blue-700 uppercase tracking-wide">Total Students</p>
+                                    <p class="text-2xl font-black text-blue-800" id="totalStudentsCount">0</p>
+                                </div>
+                                <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                                    <p class="text-sm font-bold text-purple-700 uppercase tracking-wide">Total Teachers</p>
+                                    <p class="text-2xl font-black text-purple-800" id="totalTeachersCount">16</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+                                <p class="text-sm font-bold text-yellow-700 uppercase tracking-wide mb-2">Students by Teacher</p>
+                                <div id="studentsByTeacher" class="text-xs space-y-1 max-h-32 overflow-y-auto">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <button id="downloadTemplateBtn" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                                Download Excel Template
+                            </button>
+                            
+                            <button id="exportStudentsBtn" class="w-full bg-purple-500 text-white py-3 rounded-xl font-bold hover:bg-purple-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                                Export Current Students
+                            </button>
+                            
+                            <button id="viewSpendingBtn" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                                View Student Spending
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo Management Section -->
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8 border-2 border-yellow-200">
+                <h3 class="text-2xl font-bold text-orange-700 mb-4 flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                    </svg>
+                    School Logo
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Upload School Logo</label>
+                        <input type="file" id="logoUpload" accept="image/*" class="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium">
+                        <p class="text-xs text-gray-600 mt-2">Recommended: Square image, 200x200px or larger</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="excellence-badge text-white p-6 rounded-full shadow-lg relative overflow-hidden">
+                            <img id="logoPreview" src="" alt="Logo Preview" class="absolute inset-0 w-full h-full object-cover rounded-full" style="display: none;">
+                            <svg id="logoPreviewStar" class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-700">Current Logo</p>
+                            <button id="removeLogo" class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 transition duration-200 mt-2" style="display: none;">
+                                Remove Logo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Management Section -->
+            <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-6 mb-8 border-2 border-red-200">
+                <h3 class="text-2xl font-bold text-red-700 mb-4 flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                    Manage Categories
+                </h3>
+                
+                <!-- Add New Category -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Category Name</label>
+                        <input type="text" id="newCategoryName" class="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="Enter category name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Category ID</label>
+                        <input type="text" id="newCategoryId" class="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="category-id">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Category Color</label>
+                        <select id="newCategoryColor" class="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium">
+                            <option value="purple">Purple</option>
+                            <option value="blue">Blue</option>
+                            <option value="green">Green</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="pink">Pink</option>
+                            <option value="red">Red</option>
+                            <option value="indigo">Indigo</option>
+                            <option value="orange">Orange</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="addCategoryBtn" class="w-full bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                            Add Category
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Current Categories -->
+                <div>
+                    <h4 class="text-lg font-bold text-gray-700 mb-3">Current Categories</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="categoriesGrid">
+                        <!-- Categories will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Management Section -->
+            <div class="bg-gradient-to-r from-gray-50 to-red-50 rounded-2xl p-6 border-2 border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-700 mb-4 flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                    </svg>
+                    Manage Products
+                </h3>
+                
+                <!-- Add New Product -->
+                <div class="bg-white rounded-xl p-6 mb-6 border-2 border-gray-300 shadow-lg">
+                    <h4 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Add New Product
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Product Name</label>
+                            <input type="text" id="newProductName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="Enter product name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Price (Points)</label>
+                            <input type="number" id="newProductPrice" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="Enter price" min="1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                            <select id="newProductCategory" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium">
+                                <!-- Categories will be populated here -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Emoji</label>
+                            <input type="text" id="newProductEmoji" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium text-center text-2xl" placeholder="🎁" maxlength="2">
+                        </div>
+                        <div class="flex items-end">
+                            <button id="addProductBtn" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                                Add Product
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                        <input type="text" id="newProductDescription" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" placeholder="Enter product description">
+                    </div>
+                </div>
+                
+                <!-- Current Products -->
+                <div>
+                    <h4 class="text-lg font-bold text-gray-700 mb-3">Current Products</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="adminProductsGrid">
+                        <!-- Admin products will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Panel -->
+    <div id="teacherPanel" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 overflow-y-auto" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-5xl w-full mx-4 my-8 shadow-2xl border-4 border-blue-200 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-blue-600">TEACHER PANEL</h2>
+                    <p class="text-gray-600 font-medium">Manage Student Points - <span id="currentTeacherName" class="font-bold text-blue-600"></span></p>
+                </div>
+                <button id="closeTeacherPanel" class="bg-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition duration-200">
+                    Close Panel
+                </button>
+            </div>
+            
+            <!-- Add Points Section -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                <h3 class="text-2xl font-bold text-blue-700 mb-4 flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    Award Magic Points
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Student Name</label>
+                        <input type="text" id="studentNameInput" class="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium" placeholder="Enter student name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Points to Add</label>
+                        <input type="number" id="pointsToAdd" class="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium" placeholder="Enter points" min="1" max="100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Reason</label>
+                        <select id="pointsReason" class="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
+                            <option value="">Select reason</option>
+                            <option value="excellent-behavior">Magical Behavior</option>
+                            <option value="academic-achievement">Academic Achievement</option>
+                            <option value="helping-others">Helping Others</option>
+                            <option value="leadership">Leadership</option>
+                            <option value="improvement">Improvement</option>
+                            <option value="participation">Class Participation</option>
+                            <option value="homework">Homework Magic</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button id="addPointsBtn" class="bg-blue-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-600 hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                        Award Points
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student Records -->
+            <div class="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
+                    <h3 class="text-xl font-bold">Recent Point Awards</h3>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Points</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Reason</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pointsHistoryTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Point history will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Login Modal -->
+    <div id="studentLoginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-4 border-purple-200">
+            <div class="text-center mb-6">
+                <div class="excellence-badge w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg relative">
+                    <div class="text-4xl">🤖</div>
+                    <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
+                        R2
+                    </div>
+                </div>
+                <h2 class="text-3xl font-bold text-purple-600">R2-D2 LOGIN</h2>
+                <p class="text-gray-600 mt-2 font-medium">Use your R2-D2 credentials to access the Magic Store</p>
+            </div>
+            <form id="studentLoginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">R2-D2 Username</label>
+                    <input type="text" id="r2d2Username" class="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder="Enter your R2-D2 username" required>
+                    <p class="text-xs text-gray-500 mt-1">This is the same username you use to log into school computers</p>
+                </div>
+                <button type="submit" class="w-full excellence-badge text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                    Connect to Magic Store
+                </button>
+            </form>
+            <div class="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div class="flex items-start space-x-3">
+                    <div class="text-blue-500 mt-1">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-700 mb-1">Simple R2-D2 Integration</h4>
+                        <p class="text-xs text-blue-600">Just enter your R2-D2 username to access your Magic Points balance and start shopping!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-xs text-gray-500">Don't know your R2-D2 username? Ask your teacher or visit the main office!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin & Teacher Buttons -->
+    <div class="fixed top-6 right-6 z-40 flex flex-col space-y-2">
+        <button id="adminBtn" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-600 shadow-lg transition duration-200 text-sm">
+            ADMIN
+        </button>
+        <button id="teacherBtn" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-600 shadow-lg transition duration-200 text-sm">
+            TEACHER
+        </button>
+        <button id="logoutBtn" class="bg-gray-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-gray-600 shadow-lg transition duration-200 text-sm" style="display: none;">
+            LOGOUT
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8" id="storeContent">
+        <!-- Four Houses: 1 Unicorn Family -->
+        <div class="mb-8 bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-white/50">
+            <h2 class="text-4xl font-bold text-gray-800 mb-6 text-center">
+                FOUR HOUSES : 1 UNICORN FAMILY
+            </h2>
+            
+            <!-- Unity Banner -->
+            <div class="bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-600 p-6 rounded-3xl shadow-2xl mb-6">
+                <div class="text-center text-white">
+                    <div class="flex justify-center items-center space-x-4 mb-3">
+                        <div class="text-4xl animate-bounce">🦄</div>
+                        <div class="text-4xl animate-bounce" style="animation-delay: 0.2s">✨</div>
+                        <div class="text-4xl animate-bounce" style="animation-delay: 0.4s">🌈</div>
+                        <div class="text-4xl animate-bounce" style="animation-delay: 0.6s">💫</div>
+                    </div>
+                    <h3 class="font-black text-2xl uppercase tracking-wider mb-2">UNITED AS ONE MAGICAL FAMILY</h3>
+                    <p class="text-lg font-bold opacity-90">Where Every Student Shines with Unicorn Magic</p>
+                </div>
+            </div>
+
+            <!-- Individual Houses -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-gray-800 to-black text-white p-6 rounded-2xl shadow-xl transform hover:scale-105 transition duration-300 border-2 border-white/30">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🐍</div>
+                        <h3 class="font-black text-xl uppercase tracking-wide">ALTRUISMO</h3>
+                        <p class="text-sm font-medium opacity-90 mb-3">House of Givers</p>
+                        <div class="bg-black/30 rounded-xl p-3 border border-white/20">
+                            <p class="text-xs font-bold uppercase tracking-wider opacity-80">Total Points</p>
+                            <p class="text-2xl font-black text-yellow-300" id="altruismoPoints">0</p>
+                            <p class="text-xs opacity-70" id="altruismoStudents">0 students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-red-500 to-red-700 text-white p-6 rounded-2xl shadow-xl transform hover:scale-105 transition duration-300 border-2 border-white/30">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🤍</div>
+                        <h3 class="font-black text-xl uppercase tracking-wide">AMISTAD</h3>
+                        <p class="text-sm font-medium opacity-90 mb-3">House of Friendship</p>
+                        <div class="bg-black/30 rounded-xl p-3 border border-white/20">
+                            <p class="text-xs font-bold uppercase tracking-wider opacity-80">Total Points</p>
+                            <p class="text-2xl font-black text-yellow-300" id="amistadPoints">0</p>
+                            <p class="text-xs opacity-70" id="amistadStudents">0 students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-2xl shadow-xl transform hover:scale-105 transition duration-300 border-2 border-white/30">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🦁</div>
+                        <h3 class="font-black text-xl uppercase tracking-wide">ISIBINDI</h3>
+                        <p class="text-sm font-medium opacity-90 mb-3">House of Strength</p>
+                        <div class="bg-black/30 rounded-xl p-3 border border-white/20">
+                            <p class="text-xs font-bold uppercase tracking-wider opacity-80">Total Points</p>
+                            <p class="text-2xl font-black text-yellow-300" id="isibindiPoints">0</p>
+                            <p class="text-xs opacity-70" id="isibindiStudents">0 students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-2xl shadow-xl transform hover:scale-105 transition duration-300 border-2 border-white/30">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🐺</div>
+                        <h3 class="font-black text-xl uppercase tracking-wide">RÊVEUR</h3>
+                        <p class="text-sm font-medium opacity-90 mb-3">House of Dreamers</p>
+                        <div class="bg-black/30 rounded-xl p-3 border border-white/20">
+                            <p class="text-xs font-bold uppercase tracking-wider opacity-80">Total Points</p>
+                            <p class="text-2xl font-black text-yellow-300" id="reveurPoints">0</p>
+                            <p class="text-xs opacity-70" id="reveurStudents">0 students</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center drop-shadow-2xl" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                STORE CATEGORIES
+            </h2>
+            <div class="flex flex-wrap gap-4 justify-center" id="categoryButtons">
+                <!-- Category buttons will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Shopping Cart Summary -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-6 mb-8 border-2 border-white/30">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="excellence-badge p-3 rounded-xl shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg uppercase tracking-wide">My Magic Cart</h3>
+                        <p class="text-sm text-gray-600 font-medium" id="cartSummary">0 items selected</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600 font-bold uppercase tracking-wide">Total</p>
+                    <p class="text-2xl font-black text-gray-800" id="cartTotal">0 points</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
+            <!-- Products will be populated by JavaScript -->
+        </div>
+
+        <!-- Checkout Button -->
+        <div class="fixed bottom-6 right-6">
+            <button id="checkoutBtn" class="excellence-badge text-white px-10 py-5 rounded-2xl font-black shadow-2xl hover:shadow-3xl transform hover:scale-110 transition duration-300 flex items-center space-x-3 text-lg uppercase tracking-wider" style="display: none;">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span>Claim Magic</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Student Spending Modal -->
+    <div id="spendingModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 overflow-y-auto" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 my-8 shadow-2xl border-4 border-orange-200 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-orange-600">STUDENT SPENDING REPORT</h2>
+                    <p class="text-gray-600 font-medium">Track individual student purchases</p>
+                </div>
+                <button id="closeSpendingModal" class="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-600 transition duration-200">
+                    Close
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-orange-500 to-red-600 text-white p-4">
+                    <h3 class="text-xl font-bold">Individual Student Balances</h3>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Student Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">House</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Base Points</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Awarded Points</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Spent Points</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Available Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spendingTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Spending data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-2xl p-10 max-w-md w-full mx-4 shadow-2xl text-center border-4 border-yellow-300">
+            <div class="excellence-badge w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-green-600 mb-3 uppercase tracking-wide">Magic Claimed!</h2>
+            <p class="text-gray-600 mb-8 font-medium text-lg">Your magic rewards have been submitted to your teacher for approval. Your dedication to magic will be rewarded soon!</p>
+            <button id="closeSuccessModal" class="rca-gradient text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide">
+                Continue Magic Journey
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Store categories
+        let storeCategories = [
+            { id: 'school-supplies', name: 'School Supplies', color: 'purple' },
+            { id: 'toys', name: 'Toys & Games', color: 'blue' },
+            { id: 'privileges', name: 'VIP Privileges', color: 'green' },
+            { id: 'snacks', name: 'Snacks & Treats', color: 'yellow' }
+        ];
+
+        // Student database
+        let studentDatabase = JSON.parse(localStorage.getItem('studentDatabase')) || [];
+        
+        // Individual student spending tracking
+        let studentSpending = JSON.parse(localStorage.getItem('studentSpending')) || {};
+
+        // Store data with image support
+        const products = [
+            { id: 1, name: "Pencil Set", price: 10, category: "school-supplies", emoji: "✏️", description: "Pack of 5 colorful pencils", image: null },
+            { id: 2, name: "Sticker Pack", price: 15, category: "school-supplies", emoji: "⭐", description: "50 fun reward stickers", image: null },
+            { id: 3, name: "Mini Notebook", price: 20, category: "school-supplies", emoji: "📓", description: "Small spiral notebook", image: null },
+            { id: 4, name: "Bouncy Ball", price: 25, category: "toys", emoji: "⚽", description: "Colorful bouncy ball", image: null },
+            { id: 5, name: "Fidget Spinner", price: 30, category: "toys", emoji: "🌀", description: "Stress-relief fidget toy", image: null },
+            { id: 6, name: "Puzzle Game", price: 40, category: "toys", emoji: "🧩", description: "Mini brain teaser puzzle", image: null },
+            { id: 7, name: "Extra Recess", price: 50, category: "privileges", emoji: "🏃", description: "5 extra minutes of recess", image: null },
+            { id: 8, name: "Lunch with Teacher", price: 75, category: "privileges", emoji: "🍽️", description: "Special lunch in classroom", image: null },
+            { id: 9, name: "Line Leader", price: 35, category: "privileges", emoji: "👑", description: "Be line leader for a day", image: null },
+            { id: 10, name: "Fruit Snacks", price: 20, category: "snacks", emoji: "🍇", description: "Pack of fruit snacks", image: null },
+            { id: 11, name: "Crackers", price: 15, category: "snacks", emoji: "🍪", description: "Individual pack of crackers", image: null },
+            { id: 12, name: "Juice Box", price: 25, category: "snacks", emoji: "🧃", description: "Apple juice box", image: null }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+        let studentPoints = 150;
+        let currentStudent = null;
+        let isAdminLoggedIn = false;
+        let isTeacherLoggedIn = false;
+        let currentTeacher = null;
+        const adminPassword = 'MVEUnicorns2531'; // In real implementation, this would be secure
+        
+        // Teacher credentials (in real implementation, this would be secure)
+        const teacherCredentials = {
+            'a-harris': { password: 'MVEUnicorns2526', name: 'A. Harris' },
+            'cossairt': { password: 'MVEUnicorns2526', name: 'Cossairt' },
+            'd-harris': { password: 'MVEUnicorns2526', name: 'D. Harris' },
+            'donoso': { password: 'MVEUnicorns2526', name: 'Donoso' },
+            'gorton': { password: 'MVEUnicorns2526', name: 'Gorton' },
+            'greene': { password: 'MVEUnicorns2526', name: 'Greene' },
+            'hahn': { password: 'MVEUnicorns2526', name: 'Hahn' },
+            'hyde': { password: 'MVEUnicorns2526', name: 'Hyde' },
+            'joyner': { password: 'MVEUnicorns2526', name: 'Joyner' },
+            'lieber': { password: 'MVEUnicorns2526', name: 'Lieber' },
+            'mccrary': { password: 'MVEUnicorns2526', name: 'McCrary' },
+            'mcmahan': { password: 'MVEUnicorns2526', name: 'McMahan' },
+            'ramicone': { password: 'MVEUnicorns2526', name: 'Ramicone' },
+            'reiche': { password: 'MVEUnicorns2526', name: 'Reiche' },
+            'singleton': { password: 'MVEUnicorns2526', name: 'Singleton' },
+            'westerfield': { password: 'MVEUnicorns2526', name: 'Westerfield' }
+        };
+        
+        // Points history storage
+        let pointsHistory = JSON.parse(localStorage.getItem('pointsHistory')) || [];
+
+        // DOM elements
+        const productsGrid = document.getElementById('productsGrid');
+        const cartSummary = document.getElementById('cartSummary');
+        const cartTotal = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const successModal = document.getElementById('successModal');
+        const studentName = document.getElementById('studentName');
+        const pointBalance = document.getElementById('pointBalance');
+        const adminBtn = document.getElementById('adminBtn');
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const adminProductsGrid = document.getElementById('adminProductsGrid');
+        const teacherBtn = document.getElementById('teacherBtn');
+        const teacherLoginModal = document.getElementById('teacherLoginModal');
+        const teacherPanel = document.getElementById('teacherPanel');
+        const teacherLoginForm = document.getElementById('teacherLoginForm');
+        const currentTeacherName = document.getElementById('currentTeacherName');
+        const pointsHistoryTable = document.getElementById('pointsHistoryTable');
+
+        // Student login functionality with R2-D2 integration
+        document.getElementById('studentLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const r2d2Username = document.getElementById('r2d2Username').value.trim();
+            
+            if (!r2d2Username) {
+                alert('Please enter your R2-D2 username!');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Connecting to R2-D2...';
+            submitBtn.disabled = true;
+            
+            // Simulate R2-D2 authentication (in real implementation, this would connect to actual R2-D2 system)
+            setTimeout(() => {
+                // Find student in database by R2-D2 username
+                const foundStudent = studentDatabase.find(student => 
+                    student.r2d2Username && student.r2d2Username.toLowerCase() === r2d2Username.toLowerCase()
+                );
+                
+                if (!foundStudent) {
+                    // Reset button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    alert('R2.D2 username not found in the system! Please check your username or contact your teacher.');
+                    return;
+                }
+                
+                // Log in the student
+                currentStudent = foundStudent;
+                
+                // Calculate current available points (base points + awarded points - spent points)
+                const awardedPoints = pointsHistory
+                    .filter(record => record.studentName.toLowerCase() === foundStudent.studentName.toLowerCase())
+                    .reduce((sum, record) => sum + record.points, 0);
+                
+                const spentPoints = studentSpending[foundStudent.studentName] || 0;
+                studentPoints = foundStudent.points + awardedPoints - spentPoints;
+                
+                // Update display
+                studentName.textContent = foundStudent.studentName;
+                pointBalance.textContent = studentPoints;
+                
+                // Hide login modal and show logout button
+                document.getElementById('studentLoginModal').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                
+                // Clear login form
+                document.getElementById('r2d2Username').value = '';
+                
+                // Reset button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
+                // Refresh products to show correct affordability
+                renderProducts();
+                
+                // Show success message
+                setTimeout(() => {
+                    alert(`Welcome ${foundStudent.studentName}! Successfully connected to R2.D2. You have ${studentPoints} Magic Points available.`);
+                }, 500);
+                
+            }, 1500); // Simulate network delay
+        });
+        
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to log out of R2-D2?')) {
+                currentStudent = null;
+                studentPoints = 150;
+                studentName.textContent = 'Student';
+                pointBalance.textContent = studentPoints;
+                cart = [];
+                updateCartDisplay();
+                document.getElementById('studentLoginModal').style.display = 'flex';
+                document.getElementById('logoutBtn').style.display = 'none';
+                renderProducts();
+            }
+        });
+        
+        // Set default student info
+        if (!currentStudent) {
+            studentName.textContent = 'Student';
+            pointBalance.textContent = studentPoints;
+        }
+
+        // Color mapping for categories
+        const colorClasses = {
+            purple: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+            blue: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+            green: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+            yellow: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
+            pink: { bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
+            red: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+            indigo: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+            orange: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' }
+        };
+
+        // Render category buttons
+        function renderCategoryButtons() {
+            const categoryButtonsContainer = document.getElementById('categoryButtons');
+            
+            let buttonsHTML = `
+                <button class="category-btn bg-white text-gray-800 px-8 py-3 rounded-full font-bold hover:shadow-lg transform hover:scale-105 transition duration-200 uppercase tracking-wide border-2 border-white/50 shadow-lg" data-category="all">
+                    All Rewards
+                </button>
+            `;
+            
+            storeCategories.forEach(category => {
+                const colorClass = colorClasses[category.color];
+                buttonsHTML += `
+                    <button class="category-btn bg-white text-gray-700 px-8 py-3 rounded-full font-bold hover:${colorClass.bg} hover:${colorClass.text} transition duration-200 shadow-md border-2 ${colorClass.border} uppercase tracking-wide" data-category="${category.id}">
+                        ${category.name}
+                    </button>
+                `;
+            });
+            
+            categoryButtonsContainer.innerHTML = buttonsHTML;
+            
+            // Add event listeners to category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Update active category button
+                    document.querySelectorAll('.category-btn').forEach(b => {
+                        if (b.dataset.category === 'all') {
+                            b.classList.remove('rca-gradient', 'text-white');
+                            b.classList.add('bg-white', 'text-gray-800', 'border-2', 'border-white/50', 'shadow-lg');
+                        } else {
+                            const cat = storeCategories.find(c => c.id === b.dataset.category);
+                            if (cat) {
+                                const colorClass = colorClasses[cat.color];
+                                b.classList.remove('rca-gradient', 'text-white');
+                                b.classList.add('bg-white', 'text-gray-700', 'border-2', colorClass.border);
+                            }
+                        }
+                    });
+                    
+                    if (this.dataset.category === 'all') {
+                        this.classList.remove('bg-white', 'text-gray-800', 'border-2', 'border-white/50', 'shadow-lg');
+                        this.classList.add('rca-gradient', 'text-white');
+                    } else {
+                        const cat = storeCategories.find(c => c.id === this.dataset.category);
+                        if (cat) {
+                            const colorClass = colorClasses[cat.color];
+                            this.classList.remove('bg-white', 'text-gray-700', 'border-2', colorClass.border);
+                            this.classList.add('rca-gradient', 'text-white');
+                        }
+                    }
+                    
+                    currentCategory = this.dataset.category;
+                    renderProducts();
+                });
+            });
+        }
+
+        // Render products
+        function renderProducts() {
+            const filteredProducts = currentCategory === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentCategory);
+            
+            productsGrid.innerHTML = filteredProducts.map(product => {
+                const inCart = cart.find(item => item.id === product.id);
+                const quantity = inCart ? inCart.quantity : 0;
+                const canAfford = studentPoints >= product.price;
+                
+                return `
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl hover:scale-105 transition duration-300 border-2 border-white/30">
+                        <div class="text-center mb-4">
+                            ${product.image ? 
+                                `<div class="w-20 h-20 mx-auto mb-3 rounded-xl overflow-hidden shadow-lg">
+                                    <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div class="text-5xl flex items-center justify-center h-full" style="display: none;">${product.emoji}</div>
+                                </div>` : 
+                                `<div class="text-5xl mb-3">${product.emoji}</div>`
+                            }
+                            <h3 class="font-bold text-gray-800 text-xl uppercase tracking-wide">${product.name}</h3>
+                            <p class="text-sm text-gray-600 mt-2 font-medium">${product.description}</p>
+                        </div>
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-2xl font-black text-gray-800">${product.price} pts</span>
+                            ${!canAfford ? '<span class="text-xs text-red-500 font-bold uppercase">Insufficient Points</span>' : ''}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="updateCart(${product.id}, -1)" class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition duration-200 ${quantity === 0 ? 'opacity-50 cursor-not-allowed' : ''}" ${quantity === 0 ? 'disabled' : ''}>
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <span class="w-10 text-center font-black text-lg">${quantity}</span>
+                                <button onclick="updateCart(${product.id}, 1)" class="w-10 h-10 rca-gradient text-white rounded-full flex items-center justify-center hover:shadow-lg transform hover:scale-110 transition duration-200 ${!canAfford ? 'opacity-50 cursor-not-allowed' : ''}" ${!canAfford ? 'disabled' : ''}>
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update cart
+        function updateCart(productId, change) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += change;
+                if (existingItem.quantity <= 0) {
+                    cart = cart.filter(item => item.id !== productId);
+                }
+            } else if (change > 0) {
+                cart.push({ ...product, quantity: 1 });
+            }
+            
+            updateCartDisplay();
+            renderProducts();
+            
+            // Add bounce animation to cart
+            const cartElement = document.querySelector('#cartSummary').parentElement.parentElement;
+            cartElement.classList.add('cart-bounce');
+            setTimeout(() => cartElement.classList.remove('cart-bounce'), 300);
+        }
+
+        // Update cart display
+        function updateCartDisplay() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalCost = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartSummary.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''} selected`;
+            cartTotal.textContent = `${totalCost} points`;
+            
+            checkoutBtn.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+
+        // Checkout functionality
+        checkoutBtn.addEventListener('click', function() {
+            if (!currentStudent) {
+                alert('Please log in first to make a purchase!');
+                return;
+            }
+            
+            const totalCost = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (totalCost > studentPoints) {
+                alert('Sorry, you don\'t have enough points for this order!');
+                return;
+            }
+            
+            // Record the spending for this student
+            if (!studentSpending[currentStudent.studentName]) {
+                studentSpending[currentStudent.studentName] = 0;
+            }
+            studentSpending[currentStudent.studentName] += totalCost;
+            
+            // Save spending data
+            localStorage.setItem('studentSpending', JSON.stringify(studentSpending));
+            
+            // Update student's available points
+            studentPoints -= totalCost;
+            pointBalance.textContent = studentPoints;
+            
+            // Clear cart
+            cart = [];
+            updateCartDisplay();
+            renderProducts();
+            successModal.style.display = 'flex';
+        });
+
+        // Close success modal
+        document.getElementById('closeSuccessModal').addEventListener('click', function() {
+            successModal.style.display = 'none';
+        });
+
+        // Admin functionality
+        adminBtn.addEventListener('click', function() {
+            if (isAdminLoggedIn) {
+                adminPanel.style.display = 'flex';
+                renderAdminProducts();
+            } else {
+                adminLoginModal.style.display = 'flex';
+            }
+        });
+
+        adminLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === adminPassword) {
+                isAdminLoggedIn = true;
+                adminLoginModal.style.display = 'none';
+                adminPanel.style.display = 'flex';
+                renderAdminProducts();
+                renderCategoriesGrid();
+                adminBtn.textContent = 'ADMIN ✓';
+                adminBtn.classList.add('bg-green-500');
+                adminBtn.classList.remove('bg-red-500');
+            } else {
+                alert('Incorrect password!');
+            }
+        });
+
+        // Add category button event listener
+        document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+        
+        // Add product button event listener
+        document.getElementById('addProductBtn').addEventListener('click', addProduct);
+
+        document.getElementById('cancelAdminLogin').addEventListener('click', function() {
+            adminLoginModal.style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        });
+
+        document.getElementById('closeAdminPanel').addEventListener('click', function() {
+            adminPanel.style.display = 'none';
+        });
+
+        // Teacher functionality
+        teacherBtn.addEventListener('click', function() {
+            if (isTeacherLoggedIn) {
+                teacherPanel.style.display = 'flex';
+                renderPointsHistory();
+            } else {
+                teacherLoginModal.style.display = 'flex';
+            }
+        });
+
+        teacherLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const teacherId = document.getElementById('teacherSelect').value;
+            const password = document.getElementById('teacherPassword').value;
+            
+            if (teacherCredentials[teacherId] && teacherCredentials[teacherId].password === password) {
+                isTeacherLoggedIn = true;
+                currentTeacher = teacherCredentials[teacherId];
+                teacherLoginModal.style.display = 'none';
+                teacherPanel.style.display = 'flex';
+                currentTeacherName.textContent = currentTeacher.name;
+                renderPointsHistory();
+                teacherBtn.textContent = 'TEACHER ✓';
+                teacherBtn.classList.add('bg-green-500');
+                teacherBtn.classList.remove('bg-blue-500');
+            } else {
+                alert('Incorrect teacher credentials!');
+            }
+        });
+
+        document.getElementById('cancelTeacherLogin').addEventListener('click', function() {
+            teacherLoginModal.style.display = 'none';
+            document.getElementById('teacherSelect').value = '';
+            document.getElementById('teacherPassword').value = '';
+        });
+
+        document.getElementById('closeTeacherPanel').addEventListener('click', function() {
+            teacherPanel.style.display = 'none';
+        });
+
+        // Render categories grid in admin panel
+        function renderCategoriesGrid() {
+            const categoriesGrid = document.getElementById('categoriesGrid');
+            
+            categoriesGrid.innerHTML = storeCategories.map(category => {
+                const colorClass = colorClasses[category.color];
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-4 border-2 ${colorClass.border}">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h5 class="font-bold text-gray-800 text-sm uppercase tracking-wide">${category.name}</h5>
+                                <p class="text-xs text-gray-600">ID: ${category.id}</p>
+                                <div class="flex items-center mt-2">
+                                    <div class="w-4 h-4 rounded-full ${colorClass.bg} ${colorClass.border} border-2 mr-2"></div>
+                                    <span class="text-xs ${colorClass.text} font-medium capitalize">${category.color}</span>
+                                </div>
+                            </div>
+                            <button onclick="deleteCategory('${category.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg font-bold text-xs hover:bg-red-600 transition duration-200">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Add new category
+        function addCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const id = document.getElementById('newCategoryId').value.trim();
+            const color = document.getElementById('newCategoryColor').value;
+            
+            if (!name || !id) {
+                alert('Please fill in both category name and ID!');
+                return;
+            }
+            
+            // Check if ID already exists
+            if (storeCategories.find(cat => cat.id === id)) {
+                alert('Category ID already exists! Please choose a different ID.');
+                return;
+            }
+            
+            // Add new category
+            storeCategories.push({ id, name, color });
+            
+            // Save to localStorage
+            localStorage.setItem('storeCategories', JSON.stringify(storeCategories));
+            
+            // Clear form
+            document.getElementById('newCategoryName').value = '';
+            document.getElementById('newCategoryId').value = '';
+            document.getElementById('newCategoryColor').value = 'purple';
+            
+            // Refresh displays
+            renderCategoriesGrid();
+            renderCategoryButtons();
+            
+            alert(`Category "${name}" added successfully!`);
+        }
+
+        // Delete category
+        function deleteCategory(categoryId) {
+            // Check if any products use this category
+            const productsInCategory = products.filter(p => p.category === categoryId);
+            
+            if (productsInCategory.length > 0) {
+                if (!confirm(`This category has ${productsInCategory.length} product(s). Deleting it will remove the category from those products. Continue?`)) {
+                    return;
+                }
+                
+                // Remove category from products
+                productsInCategory.forEach(product => {
+                    product.category = 'uncategorized';
+                });
+            }
+            
+            // Remove category
+            storeCategories = storeCategories.filter(cat => cat.id !== categoryId);
+            
+            // Save to localStorage
+            localStorage.setItem('storeCategories', JSON.stringify(storeCategories));
+            localStorage.setItem('storeProducts', JSON.stringify(products));
+            
+            // If current category is deleted, switch to 'all'
+            if (currentCategory === categoryId) {
+                currentCategory = 'all';
+            }
+            
+            // Refresh displays
+            renderCategoriesGrid();
+            renderCategoryButtons();
+            renderProducts();
+            
+            alert('Category deleted successfully!');
+        }
+
+        // Load saved categories
+        function loadSavedCategories() {
+            const savedCategories = localStorage.getItem('storeCategories');
+            if (savedCategories) {
+                storeCategories = JSON.parse(savedCategories);
+            }
+        }
+
+        // Render admin products
+        function renderAdminProducts() {
+            // Update category dropdown
+            updateProductCategoryDropdown();
+            
+            adminProductsGrid.innerHTML = products.map(product => {
+                const category = storeCategories.find(cat => cat.id === product.category);
+                const categoryName = category ? category.name : 'Unknown Category';
+                
+                return `
+                <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+                    <div class="text-center mb-4">
+                        ${product.image ? 
+                            `<div class="w-20 h-20 mx-auto mb-3 rounded-xl overflow-hidden shadow-lg">
+                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+                            </div>` : 
+                            `<div class="text-5xl mb-3">${product.emoji}</div>`
+                        }
+                        <h3 class="font-bold text-gray-800 text-lg uppercase tracking-wide">${product.name}</h3>
+                        <p class="text-sm text-gray-600 mt-1 font-medium">${product.description}</p>
+                        <p class="text-lg font-black text-red-600 mt-2">${product.price} pts</p>
+                        <p class="text-xs text-blue-600 font-bold mt-1 uppercase">${categoryName}</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Upload Image</label>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(${product.id}, this)" class="w-full text-xs border border-gray-300 rounded-lg p-2">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="editProduct(${product.id})" class="bg-blue-500 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-600 transition duration-200">
+                                Edit
+                            </button>
+                            <button onclick="deleteProduct(${product.id})" class="bg-red-500 text-white py-2 rounded-lg font-bold text-sm hover:bg-red-600 transition duration-200">
+                                Delete
+                            </button>
+                        </div>
+                        
+                        ${product.image ? 
+                            `<button onclick="removeImage(${product.id})" class="w-full bg-gray-500 text-white py-2 rounded-lg font-bold text-sm hover:bg-gray-600 transition duration-200">
+                                Remove Image
+                            </button>` : ''
+                        }
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Handle image upload
+        function handleImageUpload(productId, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        product.image = e.target.result;
+                        renderProducts();
+                        renderAdminProducts();
+                        
+                        // Save to localStorage for persistence
+                        localStorage.setItem('storeProducts', JSON.stringify(products));
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Remove image
+        function removeImage(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                product.image = null;
+                renderProducts();
+                renderAdminProducts();
+                
+                // Save to localStorage
+                localStorage.setItem('storeProducts', JSON.stringify(products));
+            }
+        }
+
+        // Load saved images from localStorage
+        function loadSavedImages() {
+            const savedProducts = localStorage.getItem('storeProducts');
+            if (savedProducts) {
+                const parsedProducts = JSON.parse(savedProducts);
+                parsedProducts.forEach(savedProduct => {
+                    const product = products.find(p => p.id === savedProduct.id);
+                    if (product && savedProduct.image) {
+                        product.image = savedProduct.image;
+                    }
+                });
+            }
+        }
+
+        // Add points functionality
+        document.getElementById('addPointsBtn').addEventListener('click', function() {
+            const studentNameValue = document.getElementById('studentNameInput').value.trim();
+            const pointsValue = parseInt(document.getElementById('pointsToAdd').value);
+            const reasonValue = document.getElementById('pointsReason').value;
+            
+            if (!studentNameValue || !pointsValue || !reasonValue) {
+                alert('Please fill in all fields!');
+                return;
+            }
+            
+            if (pointsValue < 1 || pointsValue > 100) {
+                alert('Points must be between 1 and 100!');
+                return;
+            }
+            
+            // Create point record
+            const pointRecord = {
+                id: Date.now(),
+                studentName: studentNameValue,
+                points: pointsValue,
+                reason: reasonValue,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString(),
+                teacher: currentTeacher.name,
+                teacherId: Object.keys(teacherCredentials).find(key => teacherCredentials[key].name === currentTeacher.name)
+            };
+            
+            // Add to history
+            pointsHistory.unshift(pointRecord);
+            
+            // Save to localStorage
+            localStorage.setItem('pointsHistory', JSON.stringify(pointsHistory));
+            
+            // Clear form
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('pointsToAdd').value = '';
+            document.getElementById('pointsReason').value = '';
+            
+            // Refresh display
+            renderPointsHistory();
+            updateHousePoints();
+            
+            // Show success message
+            alert(`Successfully awarded ${pointsValue} points to ${studentNameValue}!`);
+        });
+
+        // Render points history
+        function renderPointsHistory() {
+            const recentHistory = pointsHistory.slice(0, 50); // Show last 50 records
+            
+            pointsHistoryTable.innerHTML = recentHistory.map(record => {
+                const reasonText = record.reason.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${record.studentName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">+${record.points}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${reasonText}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.date}<br><span class="text-xs">${record.time}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${record.teacher}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (recentHistory.length === 0) {
+                pointsHistoryTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">
+                            No point awards recorded yet. Start awarding points to see them here!
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Update product category dropdown
+        function updateProductCategoryDropdown() {
+            const dropdown = document.getElementById('newProductCategory');
+            dropdown.innerHTML = storeCategories.map(category => 
+                `<option value="${category.id}">${category.name}</option>`
+            ).join('');
+        }
+
+        // Add new product
+        function addProduct() {
+            const name = document.getElementById('newProductName').value.trim();
+            const price = parseInt(document.getElementById('newProductPrice').value);
+            const category = document.getElementById('newProductCategory').value;
+            const emoji = document.getElementById('newProductEmoji').value.trim() || '🎁';
+            const description = document.getElementById('newProductDescription').value.trim();
+            
+            if (!name || !price || !category || !description) {
+                alert('Please fill in all fields!');
+                return;
+            }
+            
+            if (price < 1) {
+                alert('Price must be at least 1 point!');
+                return;
+            }
+            
+            // Generate new ID
+            const newId = Math.max(...products.map(p => p.id)) + 1;
+            
+            // Create new product
+            const newProduct = {
+                id: newId,
+                name: name,
+                price: price,
+                category: category,
+                emoji: emoji,
+                description: description,
+                image: null
+            };
+            
+            // Add to products array
+            products.push(newProduct);
+            
+            // Save to localStorage
+            localStorage.setItem('storeProducts', JSON.stringify(products));
+            
+            // Clear form
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newProductPrice').value = '';
+            document.getElementById('newProductEmoji').value = '';
+            document.getElementById('newProductDescription').value = '';
+            
+            // Refresh displays
+            renderAdminProducts();
+            renderProducts();
+            
+            alert(`Product "${name}" added successfully!`);
+        }
+
+        // Edit product
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const newName = prompt('Enter new product name:', product.name);
+            if (newName === null) return;
+            
+            const newPrice = prompt('Enter new price (points):', product.price);
+            if (newPrice === null) return;
+            
+            const newDescription = prompt('Enter new description:', product.description);
+            if (newDescription === null) return;
+            
+            const newEmoji = prompt('Enter new emoji:', product.emoji);
+            if (newEmoji === null) return;
+            
+            // Validate inputs
+            if (!newName.trim() || !newDescription.trim()) {
+                alert('Name and description cannot be empty!');
+                return;
+            }
+            
+            const priceNum = parseInt(newPrice);
+            if (isNaN(priceNum) || priceNum < 1) {
+                alert('Price must be a number greater than 0!');
+                return;
+            }
+            
+            // Update product
+            product.name = newName.trim();
+            product.price = priceNum;
+            product.description = newDescription.trim();
+            product.emoji = newEmoji.trim() || product.emoji;
+            
+            // Save to localStorage
+            localStorage.setItem('storeProducts', JSON.stringify(products));
+            
+            // Refresh displays
+            renderAdminProducts();
+            renderProducts();
+            
+            alert(`Product "${product.name}" updated successfully!`);
+        }
+
+        // Delete product
+        function deleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+                return;
+            }
+            
+            // Remove from products array
+            const index = products.findIndex(p => p.id === productId);
+            products.splice(index, 1);
+            
+            // Remove from cart if present
+            cart = cart.filter(item => item.id !== productId);
+            
+            // Save to localStorage
+            localStorage.setItem('storeProducts', JSON.stringify(products));
+            
+            // Refresh displays
+            renderAdminProducts();
+            renderProducts();
+            updateCartDisplay();
+            
+            alert(`Product "${product.name}" deleted successfully!`);
+        }
+
+        // Load saved products
+        function loadSavedProducts() {
+            const savedProducts = localStorage.getItem('storeProducts');
+            if (savedProducts) {
+                const parsedProducts = JSON.parse(savedProducts);
+                // Merge saved products with default products, keeping saved versions
+                parsedProducts.forEach(savedProduct => {
+                    const existingIndex = products.findIndex(p => p.id === savedProduct.id);
+                    if (existingIndex !== -1) {
+                        products[existingIndex] = savedProduct;
+                    } else {
+                        products.push(savedProduct);
+                    }
+                });
+            }
+        }
+
+        // Logo management functionality
+        document.getElementById('logoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const logoData = event.target.result;
+                    
+                    // Update header logo
+                    const headerLogoImage = document.getElementById('headerLogoImage');
+                    const headerLogoStar = document.getElementById('headerLogoStar');
+                    headerLogoImage.src = logoData;
+                    headerLogoImage.style.display = 'block';
+                    headerLogoStar.style.display = 'none';
+                    
+                    // Update preview in admin panel
+                    const logoPreview = document.getElementById('logoPreview');
+                    const logoPreviewStar = document.getElementById('logoPreviewStar');
+                    const removeLogo = document.getElementById('removeLogo');
+                    logoPreview.src = logoData;
+                    logoPreview.style.display = 'block';
+                    logoPreviewStar.style.display = 'none';
+                    removeLogo.style.display = 'block';
+                    
+                    // Save to localStorage
+                    localStorage.setItem('schoolLogo', logoData);
+                    
+                    alert('School logo updated successfully!');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove logo functionality
+        document.getElementById('removeLogo').addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove the school logo?')) {
+                // Reset header logo
+                const headerLogoImage = document.getElementById('headerLogoImage');
+                const headerLogoStar = document.getElementById('headerLogoStar');
+                headerLogoImage.style.display = 'none';
+                headerLogoStar.style.display = 'block';
+                
+                // Reset preview in admin panel
+                const logoPreview = document.getElementById('logoPreview');
+                const logoPreviewStar = document.getElementById('logoPreviewStar');
+                const removeLogo = document.getElementById('removeLogo');
+                logoPreview.style.display = 'none';
+                logoPreviewStar.style.display = 'block';
+                removeLogo.style.display = 'none';
+                
+                // Remove from localStorage
+                localStorage.removeItem('schoolLogo');
+                
+                // Clear file input
+                document.getElementById('logoUpload').value = '';
+                
+                alert('School logo removed successfully!');
+            }
+        });
+
+        // Load saved logo
+        function loadSavedLogo() {
+            const savedLogo = localStorage.getItem('schoolLogo');
+            if (savedLogo) {
+                // Update header logo
+                const headerLogoImage = document.getElementById('headerLogoImage');
+                const headerLogoStar = document.getElementById('headerLogoStar');
+                headerLogoImage.src = savedLogo;
+                headerLogoImage.style.display = 'block';
+                headerLogoStar.style.display = 'none';
+                
+                // Update preview in admin panel if it exists
+                const logoPreview = document.getElementById('logoPreview');
+                const logoPreviewStar = document.getElementById('logoPreviewStar');
+                const removeLogo = document.getElementById('removeLogo');
+                if (logoPreview) {
+                    logoPreview.src = savedLogo;
+                    logoPreview.style.display = 'block';
+                    logoPreviewStar.style.display = 'none';
+                    removeLogo.style.display = 'block';
+                }
+            }
+        }
+
+        // Excel upload functionality
+        document.getElementById('uploadStudentsBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('studentExcelUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an Excel file first!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (jsonData.length === 0) {
+                        alert('The Excel file appears to be empty!');
+                        return;
+                    }
+                    
+                    // Validate required columns
+                    const requiredColumns = ['Teacher', 'Student Name', 'R2.D2 Username', 'House', 'Points'];
+                    const firstRow = jsonData[0];
+                    const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+                    
+                    if (missingColumns.length > 0) {
+                        alert(`Missing required columns: ${missingColumns.join(', ')}\n\nPlease ensure your Excel file has columns: Teacher, Student Name, R2.D2 Username, House, Points`);
+                        return;
+                    }
+                    
+                    // Process and validate data
+                    const processedStudents = [];
+                    const errors = [];
+                    const validHouses = ['Altruismo', 'Amistad', 'Isibindi', 'Rêveur'];
+                    
+                    jsonData.forEach((row, index) => {
+                        const rowNum = index + 2; // Excel row number (accounting for header)
+                        
+                        // Validate required fields
+                        if (!row['Teacher'] || !row['Student Name'] || !row['R2.D2 Username'] || !row['House']) {
+                            errors.push(`Row ${rowNum}: Missing required data (Teacher, Student Name, R2.D2 Username, or House)`);
+                            return;
+                        }
+                        
+                        // Validate teacher exists
+                        const teacherKey = Object.keys(teacherCredentials).find(key => 
+                            teacherCredentials[key].name.toLowerCase() === row['Teacher'].toString().toLowerCase()
+                        );
+                        
+                        if (!teacherKey) {
+                            errors.push(`Row ${rowNum}: Teacher "${row['Teacher']}" not found in system`);
+                            return;
+                        }
+                        
+                        // Validate house
+                        const house = row['House'].toString().trim();
+                        if (!validHouses.includes(house)) {
+                            errors.push(`Row ${rowNum}: Invalid house "${house}". Must be one of: ${validHouses.join(', ')}`);
+                            return;
+                        }
+                        
+                        // Validate R2.D2 username
+                        const r2d2Username = row['R2.D2 Username'].toString().trim();
+                        if (!r2d2Username) {
+                            errors.push(`Row ${rowNum}: R2.D2 Username cannot be empty`);
+                            return;
+                        }
+                        
+                        // Check for duplicate R2.D2 usernames in this upload
+                        const duplicateInUpload = processedStudents.find(student => 
+                            student.r2d2Username.toLowerCase() === r2d2Username.toLowerCase()
+                        );
+                        if (duplicateInUpload) {
+                            errors.push(`Row ${rowNum}: Duplicate R2.D2 Username "${r2d2Username}" (also found in row for ${duplicateInUpload.studentName})`);
+                            return;
+                        }
+                        
+                        // Validate points
+                        const points = parseInt(row['Points']) || 0;
+                        if (points < 0) {
+                            errors.push(`Row ${rowNum}: Points must be 0 or greater`);
+                            return;
+                        }
+                        
+                        processedStudents.push({
+                            teacherId: teacherKey,
+                            teacherName: teacherCredentials[teacherKey].name,
+                            studentName: row['Student Name'].toString().trim(),
+                            r2d2Username: r2d2Username,
+                            house: house,
+                            points: points,
+                            dateAdded: new Date().toISOString()
+                        });
+                    });
+                    
+                    if (errors.length > 0) {
+                        alert(`Found ${errors.length} error(s):\n\n${errors.slice(0, 10).join('\n')}${errors.length > 10 ? '\n\n...and more' : ''}\n\nPlease fix these errors and try again.`);
+                        return;
+                    }
+                    
+                    if (processedStudents.length === 0) {
+                        alert('No valid student records found in the file!');
+                        return;
+                    }
+                    
+                    // Confirm before importing
+                    if (!confirm(`Ready to import ${processedStudents.length} student records?\n\nThis will replace any existing student data. Continue?`)) {
+                        return;
+                    }
+                    
+                    // Import students
+                    studentDatabase = processedStudents;
+                    localStorage.setItem('studentDatabase', JSON.stringify(studentDatabase));
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                    
+                    // Update displays
+                    updateStudentStats();
+                    
+                    alert(`Successfully imported ${processedStudents.length} student records!`);
+                    
+                } catch (error) {
+                    console.error('Error processing Excel file:', error);
+                    alert('Error reading Excel file. Please make sure it\'s a valid Excel file (.xlsx, .xls) or CSV file.');
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Download Excel template
+        document.getElementById('downloadTemplateBtn').addEventListener('click', function() {
+            try {
+                // Check if XLSX is loaded
+                if (typeof XLSX === 'undefined') {
+                    alert('Excel library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const templateData = [
+                    {
+                        'Teacher': 'A. Harris',
+                        'Student Name': 'John Smith',
+                        'R2-D2 Username': 'jsmith2024',
+                        'House': 'Altruismo',
+                        'Points': 150
+                    },
+                    {
+                        'Teacher': 'Greene',
+                        'Student Name': 'Jane Doe',
+                        'R2-D2 Username': 'jdoe2024',
+                        'House': 'Amistad',
+                        'Points': 200
+                    },
+                    {
+                        'Teacher': 'Cossairt',
+                        'Student Name': 'Mike Johnson',
+                        'R2-D2 Username': 'mjohnson2024',
+                        'House': 'Isibindi',
+                        'Points': 175
+                    },
+                    {
+                        'Teacher': 'Donoso',
+                        'Student Name': 'Sarah Wilson',
+                        'R2-D2 Username': 'swilson2024',
+                        'House': 'Rêveur',
+                        'Points': 125
+                    }
+                ];
+                
+                const worksheet = XLSX.utils.json_to_sheet(templateData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+                
+                // Auto-size columns
+                const colWidths = [
+                    { wch: 15 }, // Teacher
+                    { wch: 20 }, // Student Name
+                    { wch: 18 }, // R2.D2 Username
+                    { wch: 12 }, // House
+                    { wch: 8 }   // Points
+                ];
+                worksheet['!cols'] = colWidths;
+                
+                // Add header styling
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let col = range.s.c; col <= range.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                    if (!worksheet[cellAddress]) continue;
+                    worksheet[cellAddress].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "CCCCCC" } }
+                    };
+                }
+                
+                XLSX.writeFile(workbook, 'MVE_Student_Template.xlsx');
+                
+            } catch (error) {
+                console.error('Error creating template:', error);
+                
+                // Fallback: Create CSV content and download
+                const csvContent = 'Teacher,Student Name,R2.D2 Username,House,Points\n' +
+                    'A. Harris,John Smith,jsmith2024,Altruismo,150\n' +
+                    'Greene,Jane Doe,jdoe2024,Amistad,200\n' +
+                    'Cossairt,Mike Johnson,mjohnson2024,Isibindi,175\n' +
+                    'Donoso,Sarah Wilson,swilson2024,Rêveur,125';
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'MVE_Student_Template.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('Downloaded as CSV file instead. You can open this in Excel and save as .xlsx format.');
+            }
+        });
+
+        // View spending button
+        document.getElementById('viewSpendingBtn').addEventListener('click', function() {
+            document.getElementById('spendingModal').style.display = 'flex';
+            renderSpendingTable();
+        });
+        
+        // Close spending modal
+        document.getElementById('closeSpendingModal').addEventListener('click', function() {
+            document.getElementById('spendingModal').style.display = 'none';
+        });
+        
+        // Render spending table
+        function renderSpendingTable() {
+            const spendingTable = document.getElementById('spendingTable');
+            
+            if (studentDatabase.length === 0) {
+                spendingTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500 italic">
+                            No student data available. Please upload student records first.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const spendingData = studentDatabase.map(student => {
+                const awardedPoints = pointsHistory
+                    .filter(record => record.studentName.toLowerCase() === student.studentName.toLowerCase())
+                    .reduce((sum, record) => sum + record.points, 0);
+                
+                const spentPoints = studentSpending[student.studentName] || 0;
+                const availablePoints = student.points + awardedPoints - spentPoints;
+                
+                return {
+                    name: student.studentName,
+                    house: student.house,
+                    basePoints: student.points,
+                    awardedPoints: awardedPoints,
+                    spentPoints: spentPoints,
+                    availablePoints: availablePoints
+                };
+            });
+            
+            // Sort by student name
+            spendingData.sort((a, b) => a.name.localeCompare(b.name));
+            
+            spendingTable.innerHTML = spendingData.map(student => {
+                const houseColors = {
+                    'Altruismo': 'text-gray-700',
+                    'Amistad': 'text-red-700',
+                    'Isibindi': 'text-green-700',
+                    'Rêveur': 'text-blue-700'
+                };
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${houseColors[student.house] || 'text-gray-700'}">${student.house}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${student.basePoints}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">+${student.awardedPoints}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold">-${student.spentPoints}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${student.availablePoints >= 0 ? 'text-blue-600' : 'text-red-600'}">${student.availablePoints}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Export current students
+        document.getElementById('exportStudentsBtn').addEventListener('click', function() {
+            if (studentDatabase.length === 0) {
+                alert('No student data to export!');
+                return;
+            }
+            
+            try {
+                // Check if XLSX is loaded
+                if (typeof XLSX === 'undefined') {
+                    alert('Excel library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const exportData = studentDatabase.map(student => ({
+                    'Teacher': student.teacherName,
+                    'Student Name': student.studentName,
+                    'R2.D2 Username': student.r2d2Username,
+                    'House': student.house,
+                    'Points': student.points,
+                    'Date Added': new Date(student.dateAdded).toLocaleDateString()
+                }));
+                
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+                
+                // Auto-size columns
+                const colWidths = [
+                    { wch: 15 }, // Teacher
+                    { wch: 20 }, // Student Name
+                    { wch: 18 }, // R2.D2 Username
+                    { wch: 12 }, // House
+                    { wch: 8 },  // Points
+                    { wch: 12 }  // Date Added
+                ];
+                worksheet['!cols'] = colWidths;
+                
+                // Add header styling
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let col = range.s.c; col <= range.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                    if (!worksheet[cellAddress]) continue;
+                    worksheet[cellAddress].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "CCCCCC" } }
+                    };
+                }
+                
+                const timestamp = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(workbook, `MVE_Students_Export_${timestamp}.xlsx`);
+                
+            } catch (error) {
+                console.error('Error exporting students:', error);
+                
+                // Fallback: Create CSV content and download
+                let csvContent = 'Teacher,Student Name,R2-D2 Username,House,Points,Date Added\n';
+                studentDatabase.forEach(student => {
+                    csvContent += `"${student.teacherName}","${student.studentName}","${student.r2d2Username}","${student.house}",${student.points},"${new Date(student.dateAdded).toLocaleDateString()}"\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                const timestamp = new Date().toISOString().slice(0, 10);
+                link.setAttribute('download', `MVE_Students_Export_${timestamp}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('Downloaded as CSV file instead. You can open this in Excel and save as .xlsx format.');
+            }
+        });
+
+        // Update student statistics
+        function updateStudentStats() {
+            const totalStudents = studentDatabase.length;
+            const teacherCounts = {};
+            
+            studentDatabase.forEach(student => {
+                teacherCounts[student.teacherName] = (teacherCounts[student.teacherName] || 0) + 1;
+            });
+            
+            document.getElementById('totalStudentsCount').textContent = totalStudents;
+            
+            const studentsByTeacherDiv = document.getElementById('studentsByTeacher');
+            if (totalStudents === 0) {
+                studentsByTeacherDiv.innerHTML = '<p class="text-gray-500 italic">No students uploaded yet</p>';
+            } else {
+                const teacherList = Object.entries(teacherCounts)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([teacher, count]) => `<div class="flex justify-between"><span>${teacher}:</span><span class="font-bold">${count} students</span></div>`)
+                    .join('');
+                studentsByTeacherDiv.innerHTML = teacherList;
+            }
+            
+            // Update house points
+            updateHousePoints();
+        }
+
+        // Calculate and update house points
+        function updateHousePoints() {
+            const houseStats = {
+                'Altruismo': { points: 0, students: 0 },
+                'Amistad': { points: 0, students: 0 },
+                'Isibindi': { points: 0, students: 0 },
+                'Rêveur': { points: 0, students: 0 }
+            };
+            
+            // Calculate base points from student database
+            studentDatabase.forEach(student => {
+                if (houseStats[student.house]) {
+                    houseStats[student.house].points += student.points;
+                    houseStats[student.house].students += 1;
+                }
+            });
+            
+            // Add points from teacher awards (points history)
+            pointsHistory.forEach(record => {
+                // Find the student's house from the database
+                const student = studentDatabase.find(s => 
+                    s.studentName.toLowerCase() === record.studentName.toLowerCase()
+                );
+                
+                if (student && houseStats[student.house]) {
+                    houseStats[student.house].points += record.points;
+                }
+            });
+            
+            // Update the display
+            document.getElementById('altruismoPoints').textContent = houseStats['Altruismo'].points.toLocaleString();
+            document.getElementById('altruismoStudents').textContent = `${houseStats['Altruismo'].students} students`;
+            
+            document.getElementById('amistadPoints').textContent = houseStats['Amistad'].points.toLocaleString();
+            document.getElementById('amistadStudents').textContent = `${houseStats['Amistad'].students} students`;
+            
+            document.getElementById('isibindiPoints').textContent = houseStats['Isibindi'].points.toLocaleString();
+            document.getElementById('isibindiStudents').textContent = `${houseStats['Isibindi'].students} students`;
+            
+            document.getElementById('reveurPoints').textContent = houseStats['Rêveur'].points.toLocaleString();
+            document.getElementById('reveurStudents').textContent = `${houseStats['Rêveur'].students} students`;
+        }
+
+        // Initialize
+        loadSavedCategories();
+        loadSavedProducts();
+        loadSavedLogo();
+        updateStudentStats();
+        updateHousePoints();
+        renderCategoryButtons();
+        renderProducts();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96aa13d2e053ed30',t:'MTc1NDQzNjU3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
